@@ -6,11 +6,10 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Controllers;
 
 [ApiController]
-[Route("api/controller")]
+[Route("api/[controller]")]
 public class ProjectsController : ControllerBase
 {
     private readonly AppDbContext _context;
-
     public ProjectsController(AppDbContext context)
     {
         _context = context;
