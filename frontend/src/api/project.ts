@@ -25,8 +25,18 @@ export async function createProject(project: {
     });
 
     if(!response.ok) {
-        throw new Error("Failed to create proejct");
+        throw new Error("Failed to create project");
     }
 
     return response.json();
+}
+
+export async function deleteProject(id: number) {
+    const response = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to delete project.");
+    }
 }
