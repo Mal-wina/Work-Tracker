@@ -45,5 +45,25 @@ public class ProjectsController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateProject(int id, Project updatedProject)
+    {
+        var project = await _context.Projects.FindAsync(id);
+
+        if (project == null)
+        {
+            return NotFound();
+        }
+
+        project.ProjectNumber = updatedProject.ProjectNumber;
+        project.ProjectName = updatedProject.ProjectName;
+        project.CustomerName = updatedProject.CustomerName;
+        project.IsActive = updatedProject.IsActive;
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
 
