@@ -29,5 +29,21 @@ public class ProjectsController : ControllerBase
 
         return CreatedAtAction(nameof(GetProjects), new { id = project.Id}, project);
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteProject(int id)
+    {
+        var project = await _context.Projects.FindAsync(id);
+
+        if (project == null)
+        {
+            return NotFound();
+        }
+
+        _context.Projects.Remove(project);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
 
