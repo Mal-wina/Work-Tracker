@@ -40,3 +40,25 @@ export async function deleteProject(id: number) {
         throw new Error("Failed to delete project.");
     }
 }
+
+export async function updateProject(
+    id: number,
+    project: {
+        projectNumber: string;
+        projectName: string;
+        customerName: string;
+        isActive: boolean;
+    }
+) {
+    const response = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(project),
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to update project.");
+    }
+}
