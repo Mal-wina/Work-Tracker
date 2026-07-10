@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProjects, createProject, deleteProject} from "../api/project";
+import { getProjects, createProject, deleteProject, updateProject} from "../api/project";
 import type { Project } from "../types/project";
 
 
@@ -11,6 +11,8 @@ export default function ProjectsPage() {
     const [projectName, setProjectName] = useState("");
     const [customerName, setCustomerName] = useState("");
     const [isActive, setIsActive] = useState(true);
+
+    const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
     
     useEffect(() => {
         getProjects()
@@ -18,39 +20,73 @@ export default function ProjectsPage() {
             .catch(console.error);
     }, []);
 
-    const handleSubmit = async (event: React.FormEvent) => {
+    const resetForm = () => {
+        setProjectNumber("");
+        setProjectName("");
+        setCustomerName("");
+        setIsActive(true);
+        setEditingProjectId(null);
+    };
+
+      const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
         try {
-            const newProject = await createProject({
+            const projectData = {
                 projectNumber,
                 projectName,
                 customerName,
                 isActive,
-            });
+        };
 
-            setProjects((currentProjects) => [...currentProjects, newProject]);
+        if (editingProjectId !== null) {
+            await updateProject(editingProjectId, projectData);
 
-            setProjectNumber("");
-            setProjectName("");
-            setCustomerName("");
-            setIsActive(true);
-        } catch (error) {
-        console.error(error);
-        }
-    };
-
-    const handleDelete = async (id: number) => {
-        try {
-            await deleteProject(id);
-
-            setProjects((currentProjects) =>
-                currentProjects.filter((project) => project.id !== id)
+        setProjects((currentProjects) =>
+          currentProjects.map((project) =>
+            project.id === editingProjectId
+              ? { ...project, ...projectData }
+              : project
+          )
         );
+      } else {
+        const newProject = await createProject(projectData);
+
+        setProjects((currentProjects) => [
+          ...currentProjects,
+          newProject,
+        ]);
+      }
+
+      resetForm();
     } catch (error) {
-        console.error(error);
+      console.error(error);
     }
-};
+  };
+
+  const handleEdit = (project: Project) => {
+    setEditingProjectId(project.id);
+    setProjectNumber(project.projectNumber);
+    setProjectName(project.projectName);
+    setCustomerName(project.customerName);
+    setIsActive(project.isActive);
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteProject(id);
+
+      setProjects((currentProjects) =>
+        currentProjects.filter((project) => project.id !== id)
+      );
+
+      if (editingProjectId === id) {
+        resetForm();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
     return (
         <div>
@@ -83,9 +119,21 @@ export default function ProjectsPage() {
                 Active
                 </label>
 
-                <button type="submit">Add Project</button>
+                 <button type="submit">
+                    {editingProjectId !== null ? "Save Changes" : "Add Project"}
+                </button>
+           
+
+            {editingProjectId !== null && (
+                <button type="button" onClick={resetForm}>
+                Cancel
+                </button>
+            )}
             </form>
-            
+
+            <hr />
+
+
             {projects.length === 0 ? (
                 <p>No projects found</p>
             ) : (
@@ -99,20 +147,33 @@ export default function ProjectsPage() {
                         </tr>
                     </thead>
 
-                    <tbody>
-                        {projects.map((project) => (
-                            <tr key={project.id}>
-                                <td>{project.projectNumber}</td>
-                                <td>{project.projectName}</td>
-                                <td>{project.customerName}</td>
-                                <td>{project.isActive ? "Yes" : "No"}</td>
-                                <td>
-                                    <button type="button" onClick={() => handleDelete(project.id)}>Delete</button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                   <tbody>
+
+                    {projects.map((project) => (
+                        <tr key={project.id}>
+                            <td>{project.projectNumber}</td>
+                            <td>{project.projectName}</td>
+                            <td>{project.customerName}</td>
+                            <td>{project.isActive ? "Yes" : "No"}</td>
+                            <td>
+                                 <button
+                                type="button"
+                                onClick={() => handleEdit(project)}
+                                >
+                                Edit
+                                </button>
+
+                                <button
+                                type="button"
+                                onClick={() => handleDelete(project.id)}
+                                >
+                                Delete
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
             )}
         </div>
     );
