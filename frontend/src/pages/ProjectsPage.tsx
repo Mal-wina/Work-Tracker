@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProjects, createProject } from "../api/project";
+import { getProjects, createProject, deleteProject} from "../api/project";
 import type { Project } from "../types/project";
 
 
@@ -21,20 +21,36 @@ export default function ProjectsPage() {
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
-        const newProject = await createProject({
-            projectNumber,
-            projectName,
-            customerName,
-            isActive,
-        });
+        try {
+            const newProject = await createProject({
+                projectNumber,
+                projectName,
+                customerName,
+                isActive,
+            });
 
-        setProjects([...projects, newProject]);
+            setProjects((currentProjects) => [...currentProjects, newProject]);
 
-        setProjectNumber("");
-        setProjectName("");
-        setCustomerName("");
-        setIsActive(true);
+            setProjectNumber("");
+            setProjectName("");
+            setCustomerName("");
+            setIsActive(true);
+        } catch (error) {
+        console.error(error);
+        }
     };
+
+    const handleDelete = async (id: number) => {
+        try {
+            await deleteProject(id);
+
+            setProjects((currentProjects) =>
+                currentProjects.filter((project) => project.id !== id)
+        );
+    } catch (error) {
+        console.error(error);
+    }
+};
 
     return (
         <div>
@@ -90,6 +106,9 @@ export default function ProjectsPage() {
                                 <td>{project.projectName}</td>
                                 <td>{project.customerName}</td>
                                 <td>{project.isActive ? "Yes" : "No"}</td>
+                                <td>
+                                    <button type="button" onClick={() => handleDelete(project.id)}>Delete</button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
