@@ -3,6 +3,7 @@ import DashboardPage from "./pages/DashboardPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import UsersPage from "./pages/UsersPage";
 import WorkEntriesPage from "./pages/WorkEntriesPage";
+import "./App.css";
 
 function App() {
   return (
